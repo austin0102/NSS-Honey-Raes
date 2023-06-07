@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import "./Tickets.css";
 import { useNavigate } from "react-router-dom";
 
-export const TicketList = () => {
+import { Ticket } from "./Ticket";
+
+export const TicketList = ({searchTermState}) => {
   const [tickets, setTickets] = useState([]);
+  const [employees, setEmployees] = useState([])
   const [filteredTickets, setFiltered] = useState([]);
   const [emergency, setEmergency] = useState(false);
   const [openOnly, updateOpenOnly] = useState(false)
@@ -11,6 +14,14 @@ export const TicketList = () => {
 
   const localHoneyUser = localStorage.getItem("honey_user");
   const honeyUserObject = JSON.parse(localHoneyUser);
+
+  useEffect(
+    () => {
+      const searchedTickets = tickets.filter(ticket => ticket.description.toLowerCase().startsWith(searchTermState.toLowerCase()))
+      setFiltered(searchedTickets)
+    },
+    [searchTermState]
+  )
 
   useEffect(() => {
     if (emergency) {
@@ -23,12 +34,22 @@ export const TicketList = () => {
     }
   }, [emergency]);
 
+  const getAllTickets = () => {
+    fetch(`http://localhost:8088/serviceTickets?_embed=employeeTickets`)
+    .then((response) => response.json())
+    .then((ticketArray) => {
+      setTickets(ticketArray);
+    });
+  }
+
   useEffect(
     () => {
-      fetch(`http://localhost:8088/serviceTickets`)
+        getAllTickets()
+
+        fetch(`http://localhost:8088/employees?_expand=user`)
         .then((response) => response.json())
-        .then((ticketArray) => {
-          setTickets(ticketArray);
+        .then((employeeArry) => {
+          setEmployees(employeeArry);
         });
     },
     [] // When this array is empty, you are observing initial component state
@@ -67,6 +88,7 @@ export const TicketList = () => {
       ? <>
         <button onClick={() => setEmergency(true)}>Emergency Only</button>
         <button onClick={() => setEmergency(false)}>Show All</button>
+        
         </>
       :<>
       <button onClick={() => navigate("/ticket/create")}>Create Ticket</button>
@@ -77,15 +99,13 @@ export const TicketList = () => {
   
       <h2>List of Tickets</h2>
       <article className="tickets">
-        {filteredTickets.map((ticket) => {
-          return (
-            <section className="ticket" key={`ticket--${ticket.id}`}>
-              <header>{ticket.description}</header>
-              <footer>Emergency: {ticket.emergency ? "Yes" : "No"}</footer>
-            </section>
-          );
-        })}
+        {filteredTickets.map((ticket) => <Ticket
+         employees={employees}
+          currentUser={honeyUserObject} 
+          ticketObject={ticket}
+          getAllTickets={getAllTickets} />
+        )}
       </article>
     </>
-  
+    
 };

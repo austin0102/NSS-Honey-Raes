@@ -1,0 +1,13 @@
+.employees {
+    display: flex;
+    justify-content: space-around;
+}
+
+.employee {
+    border: 3px navy solid;
+    background-color: dodgerblue;
+    color: navy;
+    border-radius: 15px;
+    padding: 5px;
+    margin: 5px;
+}

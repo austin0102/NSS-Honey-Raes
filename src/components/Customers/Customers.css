@@ -1,0 +1,14 @@
+.customers {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: column;
+}
+
+.customer {
+    border: 3px navy solid;
+    background-color: dodgerblue;
+    color: navy;
+    border-radius: 15px;
+    padding: 5px;
+    margin: 5px;
+}
